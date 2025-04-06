@@ -16,17 +16,32 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", (req, res, next) => {
+app.get("/", (req, res) => {
   res.status(200);
   res.json({
     message: "Hello",
   });
   console.log("Hello");
-  next();
+  // throw new Error("Oops");
 });
 
 app.use("/api", protect, router);
 app.post("/user", createNewUser);
 app.post("/signin", handleInputErrors, signin);
+
+app.use((err, req, res, next) => {
+  if (err.type === "auth") {
+    res.status(401).json({ message: "unauthorized" });
+  } else if (err.type === "input") {
+    res.status(400).json({
+      message: "invalid input",
+    });
+  } else {
+    res.status(500).json({
+      message: "Oops, that on us",
+    });
+  }
+  res.json({ message: `Oops something went wrong, message is ${err.message}` });
+});
 
 export default app;
